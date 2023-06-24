@@ -2,6 +2,8 @@
 
 A ready to use Docker Compose configuration for a LEMP stack (Nginx, PHP, Laravel, MariaDB, and PHPMyAdmin).
 
+![Laravel image](images/laravel.png)
+
 ## Requirements
 
 - Docker
