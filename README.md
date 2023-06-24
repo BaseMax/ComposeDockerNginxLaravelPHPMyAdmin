@@ -21,3 +21,11 @@ A ready to use Docker Compose configuration for a LEMP stack (Nginx, PHP, Larave
 - `./nginx/default.conf:/etc/nginx/conf.d/default.conf`
 - `./php/local.ini:/usr/local/etc/php/conf.d/local.ini`
 - `./mysql:/etc/mysql/conf.d`
+
+## Usefull commands for Update and clear database
+
+```console
+php artisan migrate
+php artisan config:clear
+php artisan cache:clear
+```
