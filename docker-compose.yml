@@ -1,83 +1,41 @@
 version: '3'
 services:
-  mariadb:
-    image: docker.io/bitnami/mariadb:latest
-    environment:
-      # ALLOW_EMPTY_PASSWORD is recommended only for development.
-      - ALLOW_EMPTY_PASSWORD=yes
-      - MARIADB_USER=bn_myapp
-      - MARIADB_DATABASE=bitnami_myapp
-  myapp:
-    image: docker.io/bitnami/laravel:latest
-    ports:
-      - '8000:8000'
-    environment:
-      - DB_HOST=mariadb
-      - DB_PORT=3306
-      - DB_USERNAME=bn_myapp
-      - DB_DATABASE=bitnami_myapp
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
     volumes:
-      - './my-project:/app'
+      - ./src:/var/www/html
     depends_on:
-      - mariadb
-  #app:
-  #  build:
-  #    context: .
-  #    dockerfile: Dockerfile
-  #  image: php:8.1.0-fpm
-  #  container_name: app
-  #  restart: unless-stopped
-  #  tty: true
-  #  environment:
-  #    SERVICE_NAME: app
-  #    SERVICE_TAGS: dev
-  #  working_dir: /var/www
-  #  volumes:
-  #    - ./:/var/www
-  #    - ./php/local.ini:/usr/local/etc/php/conf.d/local.ini
-  #  networks:
-  #    - app-network
-  #webserver:
-  #  image: nginx:alpine
-  #  container_name: webserver
-  #  restart: unless-stopped
-  #  tty: true
-  #  ports:
-  #    - "80:80"
-  #    - "443:443"
-  #  volumes:
-  #    - ./:/var/www
-  #    - ./nginx/conf.d/:/etc/nginx/conf.d/
-  #  networks:
-  #    - app-network
-  #db:
-  #  image: mysql:5.7.22
-  #  container_name: db
-  #  restart: unless-stopped
-  #  tty: true
-  #  ports:
-  #    - "3306:3306"
-  #  environment:
-  #    MYSQL_DATABASE: laravel
-  #    MYSQL_ROOT_PASSWORD: your_mysql_root_password
-  #    SERVICE_TAGS: dev
-  #    SERVICE_NAME: mysql
-  #  volumes:
-  #    - dbdata:/var/lib/mysql/
-  #    - ./mysql/my.cnf:/etc/mysql/my.cnf
-  #  networks:
-  #    - app-network
-  #phpmyadmin:
-  #  image: phpmyadmin/phpmyadmin:latest
-  #  ports:
-  #    - 8080:80
-  #  environment:
-  #    PMA_HOST: db
-  #  depends_on:
-  #    - db
-#networks:
-#  app-network:
-#    driver: bridge
-#volumes:
-#  dbdata:
-#    driver: local
+      - db
+    env_file:
+      - .env
+  db:
+    image: mariadb:latest
+    volumes:
+      - db_data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+      MYSQL_DATABASE: ${DB_DATABASE}
+      MYSQL_USER: ${DB_USERNAME}
+      MYSQL_PASSWORD: ${DB_PASSWORD}
+  nginx:
+    image: nginx:latest
+    ports:
+      - '80:80'
+    volumes:
+      - ./nginx/conf.d:/etc/nginx/conf.d
+      - ./src:/var/www/html
+    depends_on:
+      - app
+  phpmyadmin:
+    image: phpmyadmin/phpmyadmin:latest
+    ports:
+      - '8080:80'
+    depends_on:
+      - db
+    environment:
+      PMA_HOST: db
+      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD}
+volumes:
+  db_data:
